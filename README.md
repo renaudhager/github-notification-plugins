@@ -5,7 +5,7 @@ many GitHub notifications are unread, plus rules that clear out the ones you
 never want to look at.
 
 - The bar shows an unread count sourced from the GitHub CLI (`gh`).
-- A popup lists the unread threads: **Enter** opens one, **x** marks it read,
+- A popup lists the unread threads: **Enter** opens one, **x** marks it done,
   **r** refreshes, **a** opens github.com/notifications. Opening a thread goes
   to the pull request, issue, discussion, release or commit it is about — not
   the repository.
@@ -86,7 +86,7 @@ Rules are evaluated **top to bottom; the first match wins**.
 
 | `action`  | Effect                                                          |
 |-----------|-----------------------------------------------------------------|
-| `"ack"`   | Matching unread threads are marked read on GitHub (so they stop coming back) and hidden from the count. |
+| `"ack"`   | Matching unread threads are marked done on GitHub (they leave the inbox for the Done tab) and hidden from the count. |
 | `"ignore"`| Matching threads are hidden from the count only; they stay unread on GitHub. |
 
 | Pattern                 | Matches                                                     |
@@ -118,7 +118,7 @@ document. Each row's `url` is the page it opens: the subject API URL is mapped
 onto its web page (`/pulls/7` becomes `/pull/7`), and a notification GitHub
 files as an `Issue` is checked once to tell a real issue from a pull request.
 `Service.qml` runs it on a timer and on demand; `Panel.qml` renders the bar
-icon and the popup, and calls `--mark-read <id>` for the `x` action.
+icon and the popup, and calls `--mark-done <id>` for the `x` action.
 
 Nothing is cached: each poll is one request per 50 unread threads plus one for
 each issue-numbered thread, well inside the 5,000/hour authenticated limit.

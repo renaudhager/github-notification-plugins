@@ -6,13 +6,15 @@
 # delegated entirely to the gh CLI credential store.
 #
 # Usage:
-#   github-notifications-fetch [--config JSON] [--mark-read ID]
+#   github-notifications-fetch [--config JSON] [--mark-done ID]
 #
 #   --config JSON    {"rules":[{"pattern":"repo/*","action":"ack"|"ignore"}]}
 #                    Rule actions: `ack` and `ignore` both hide matching
 #                    threads from the counted number; `ack` also marks them
 #                    read on GitHub, `ignore` leaves them alone there.
-#   --mark-read ID   Mark one notification thread read and exit.
+#   --mark-done ID   Mark one notification thread done and exit (GitHub's
+#                    inbox "Done": it leaves the inbox for the Done tab,
+#                    which is stronger than merely marking it read).
 #
 # Output:
 #   {
@@ -35,11 +37,11 @@ trap 'rm -rf "$WORK"' EXIT
 
 # ---------------------------------------------------------------- arguments
 config=""
-mark_read=""
+mark_done=""
 while (($#)); do
   case "$1" in
     --config) [[ $# -ge 2 ]] || { echo "missing value for $1" >&2; exit 2; }; config=$2; shift 2 ;;
-    --mark-read) [[ $# -ge 2 ]] || { echo "missing value for $1" >&2; exit 2; }; mark_read=$2; shift 2 ;;
+    --mark-done) [[ $# -ge 2 ]] || { echo "missing value for $1" >&2; exit 2; }; mark_done=$2; shift 2 ;;
     -h|--help) sed -n '2,24p' "$0"; exit 0 ;;
     *) echo "unknown option: $1" >&2; exit 2 ;;
   esac
@@ -69,12 +71,13 @@ command -v gh >/dev/null 2>&1 || fail "GitHub CLI (gh) is not installed or not o
 token=$(gh auth token -h github.com 2>/dev/null) || token=""
 [[ -n $token ]] || fail "Not signed in. Run 'gh auth login' (scopes: notifications, repo)."
 
-if [[ -n $mark_read ]]; then
-  [[ $mark_read =~ ^[0-9]+$ ]] || { jq -nc '{ok:false,error:"Invalid notification id"}'; exit 0; }
-  if gh api --method PATCH "/notifications/threads/$mark_read" >/dev/null 2>&1; then
-    jq -nc '{ok:true,markedRead:true}'
+if [[ -n $mark_done ]]; then
+  [[ $mark_done =~ ^[0-9]+$ ]] || { jq -nc '{ok:false,error:"Invalid notification id"}'; exit 0; }
+  # DELETE is "done"; PATCH would only mark it read and leave it in the inbox.
+  if gh api --method DELETE "/notifications/threads/$mark_done" >/dev/null 2>&1; then
+    jq -nc '{ok:true,markedDone:true}'
   else
-    jq -nc '{ok:false,error:"Could not mark the notification read"}'
+    jq -nc '{ok:false,error:"Could not mark the notification done"}'
   fi
   exit 0
 fi
@@ -265,12 +268,12 @@ done < <(jq -r '(.notifications + .ackedItems)[]
   | .repo + " " + ((.subjectUrl | capture("/issues/(?<n>[0-9]+)$")).n)' "$WORK/shaped.json")
 
 # ---------------------------------------------------------------- acknowledge
-# Mark every unread thread an `ack` rule matched read on GitHub, so it drops
+# Mark every unread thread an `ack` rule matched done on GitHub, so it drops
 # out of the inbox on the next poll instead of coming back forever.
 while IFS= read -r id; do
   [[ $id =~ ^[0-9]+$ ]] || continue
-  gh api --method PATCH "/notifications/threads/$id" >/dev/null 2>&1 \
-    || errors=$(jq -c --arg e "Could not mark thread $id read" '. + [$e]' <<<"$errors")
+  gh api --method DELETE "/notifications/threads/$id" >/dev/null 2>&1 \
+    || errors=$(jq -c --arg e "Could not mark thread $id done" '. + [$e]' <<<"$errors")
 done < <(jq -r '.ackedItems[].id' "$WORK/shaped.json")
 
 login=$(gh api user --jq .login 2>/dev/null) || login=""

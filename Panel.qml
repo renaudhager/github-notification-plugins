@@ -40,11 +40,11 @@ Panel {
     root.close()
   }
 
-  function markSelectedRead() {
+  function markSelectedDone() {
     var row = rows[cursorIndex]
     if (!row) return
     clearStatus()
-    service.markRead(row.id)
+    service.markDone(row.id)
     clampCursor()
   }
 
@@ -248,7 +248,7 @@ Panel {
       }
       onActivateRequested: root.openSelected()
       onCloseRequested: root.close()
-      onDeleteRequested: root.markSelectedRead()
+      onDeleteRequested: root.markSelectedDone()
       onTabRequested: function(direction) { root.switchPanel(direction) }
       onTextKey: function(t) {
         if (t === "r" || t === "R") service.refresh()
@@ -409,7 +409,7 @@ Panel {
                   }
                   onClicked: function(mouse) {
                     root.cursorIndex = rowItem.index
-                    if (mouse.button === Qt.MiddleButton) root.markSelectedRead()
+                    if (mouse.button === Qt.MiddleButton) root.markSelectedDone()
                     else root.openSelected()
                   }
                 }
@@ -463,12 +463,12 @@ Panel {
                     visible: actionsRow.revealed
                     foreground: root.foreground
                     hoverColor: root.urgent
-                    tooltipText: "Mark read (x)"
+                    tooltipText: "Mark done (x)"
                     iconText: "󰄬"
                     enabled: !service.marking
                     onClicked: {
                       root.cursorIndex = rowItem.index
-                      root.markSelectedRead()
+                      root.markSelectedDone()
                     }
                   }
 
@@ -596,7 +596,7 @@ Panel {
             textFormat: Text.PlainText
             topPadding: Style.space(4)
             text: service.visibleCount > 0
-              ? "Enter opens the thread · x marks read · r refreshes · a opens the inbox"
+              ? "Enter opens the thread · x marks done · r refreshes · a opens the inbox"
               : "r refreshes · a opens the inbox · right-click the icon for the inbox"
             color: root.dim
             font.family: root.fontFamily

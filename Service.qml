@@ -26,9 +26,9 @@ Item {
   property bool marking: false
   property string lastActionStatus: ""
 
-  // Threads a click just marked read, hidden until the next successful fetch
-  // reports them gone. Without this the row snaps back while the PATCH is in
-  // flight and the bar stays lit for a whole refresh interval.
+  // Threads a click just marked done, hidden until the next successful fetch
+  // reports them gone. Without this the row snaps back while the DELETE is
+  // in flight and the bar stays lit for a whole refresh interval.
   property var hiddenIds: ({})
   property bool refreshQueued: false
   property string _stdout: ""
@@ -36,7 +36,7 @@ Item {
   readonly property int refreshIntervalSec: intSetting("refreshIntervalSec", 300, 60, 3600)
   readonly property var rules: parsedRules()
 
-  // Rows to show in the panel, minus anything the user just marked read.
+  // Rows to show in the panel, minus anything the user just marked done.
   readonly property var visibleNotifications: notifications.filter(function(n) {
     return !hiddenIds[n.id]
   })
@@ -98,7 +98,7 @@ Item {
     fetch.running = true
   }
 
-  function markRead(id) {
+  function markDone(id) {
     if (marking || id === undefined || id === null) return
     var next = {}
     for (var key in hiddenIds) next[key] = hiddenIds[key]
@@ -201,14 +201,14 @@ Item {
 
   Process {
     id: mark
-    command: ["bash", root.helperPath(), "--mark-read", root.markId]
+    command: ["bash", root.helperPath(), "--mark-done", root.markId]
     stdout: StdioCollector {
       onStreamFinished: {
         try {
           var data = JSON.parse(text)
-          root.lastActionStatus = data && data.ok ? "" : String((data && data.error) || "Could not mark it read.")
+          root.lastActionStatus = data && data.ok ? "" : String((data && data.error) || "Could not mark it done.")
         } catch (e) {
-          root.lastActionStatus = "Could not mark it read."
+          root.lastActionStatus = "Could not mark it done."
         }
       }
     }

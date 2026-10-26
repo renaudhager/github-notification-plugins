@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "renaudhager.github-notifications",
+  "name": "GitHub notifications",
+  "version": "0.1.0",
+  "author": "Renaud Hager",
+  "license": "MIT",
+  "description": "Unread GitHub notification count in the Omarchy bar, with rules that acknowledge or hide the notifications you never want to see.",
+  "kinds": ["bar-widget"],
+  "activation": "on-demand",
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "GitHub notifications",
+    "description": "A count of unread GitHub notifications from the gh CLI. Rules auto-acknowledge (mark read on GitHub) or ignore (hide locally) matching threads so the number only reflects what you actually have to look at.",
+    "category": "Development",
+    "aliases": ["github", "notifications", "inbox"],
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {
+      "refreshIntervalSec": 300,
+      "rules": "[]"
+    },
+    "schema": [
+      {
+        "key": "refreshIntervalSec",
+        "type": "integer",
+        "label": "Refresh interval (seconds)",
+        "min": 60,
+        "max": 3600,
+        "step": 30,
+        "defaultValue": 300
+      },
+      {
+        "key": "rules",
+        "type": "string",
+        "label": "Rules (JSON list)",
+        "defaultValue": "[]",
+        "description": "A JSON list of {\"pattern\": ..., \"action\": \"ack\" | \"ignore\"}. The first matching rule wins. Patterns: owner/repo, owner/*, owner/repo#pull, owner/repo#issue, owner/repo#<number>, owner/repo#any, or a bare word matching a repository, subject type (pullRequest, issue, release) or reason (review_requested, assign, comment)."
+      }
+    ]
+  }
+}

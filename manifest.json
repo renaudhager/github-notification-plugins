@@ -20,6 +20,7 @@
     "defaultSection": "right",
     "defaults": {
       "refreshIntervalSec": 300,
+      "alarmThreshold": 10,
       "rules": "[]"
     },
     "schema": [
@@ -31,6 +32,16 @@
         "max": 3600,
         "step": 30,
         "defaultValue": 300
+      },
+      {
+        "key": "alarmThreshold",
+        "type": "integer",
+        "label": "Turn the bar red above this many unread",
+        "min": 0,
+        "max": 999,
+        "step": 1,
+        "defaultValue": 10,
+        "description": "The bell and count stay in the normal bar color until the unread count passes this number. 0 means red as soon as anything is unread."
       },
       {
         "key": "rules",

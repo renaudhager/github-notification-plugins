@@ -162,6 +162,7 @@ Panel {
     bar: root.bar
     fontFamily: root.fontFamily
     active: service.alarming
+    activeColor: root.urgent
     tooltipText: root.tooltipText()
     fixedWidth: vertical ? Style.bar.iconSlot : Style.bar.iconSlot + badgeSlot
     onPressed: function(buttonCode) {
@@ -189,14 +190,14 @@ Panel {
             text: "󰊤"
             fontFamily: root.fontFamily
             fontSize: Style.bar.iconFont
-            color: button.active && button.useActiveColor ? button.activeColor : button.foreground
+            color: button.active ? button.activeColor : button.foreground
           }
 
           Text {
             id: badgeText
             anchors.verticalCenter: parent.verticalCenter
             text: root.countLabel(service.visibleCount)
-            color: button.active ? button.activeColor : button.foreground
+            color: button.active ? button.activeColor : root.dim
             font.family: root.fontFamily
             font.pixelSize: root.fontSize
           }

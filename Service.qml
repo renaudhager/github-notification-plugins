@@ -34,6 +34,9 @@ Item {
   property string _stdout: ""
 
   readonly property int refreshIntervalSec: intSetting("refreshIntervalSec", 300, 60, 3600)
+  // The bar only turns red past this many unread threads: a couple of
+  // notifications is normal traffic, not something to stare at.
+  readonly property int alarmThreshold: intSetting("alarmThreshold", 10, 0, 999)
   readonly property var rules: parsedRules()
 
   // Rows to show in the panel, minus anything the user just marked done.
@@ -158,7 +161,7 @@ Item {
   }
 
   readonly property bool failing: state === "error"
-  readonly property bool alarming: visibleCount > 0
+  readonly property bool alarming: visibleCount > alarmThreshold
 
   function openInBrowser(url) {
     if (!url) return

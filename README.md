@@ -4,7 +4,9 @@ A bar widget for the [Omarchy](https://omarchy.org) Quattro shell that shows how
 many GitHub notifications are unread, plus rules that clear out the ones you
 never want to look at.
 
-- The bar shows an unread count sourced from the GitHub CLI (`gh`).
+- The bar shows an unread count sourced from the GitHub CLI (`gh`). The bell
+  and count only turn red once more than `alarmThreshold` (default 10) threads
+  are unread.
 - A popup lists the unread threads: **Enter** opens one, **x** marks it done,
   **r** refreshes, **a** opens github.com/notifications. Opening a thread goes
   to the pull request, issue, discussion, release or commit it is about — not
@@ -53,12 +55,14 @@ Configured per widget in `~/.config/omarchy/shell.json` (layout entry for
 | Key                  | Default | Meaning                                        |
 |----------------------|---------|------------------------------------------------|
 | `refreshIntervalSec` | `300`   | Poll interval, 60–3600 seconds.                |
+| `alarmThreshold`     | `10`    | The bar turns red only above this unread count. |
 | `rules`              | `[]`    | JSON list of rules, see below.                 |
 
 ```json
 {
   "id": "renaudhager.github-notifications",
   "refreshIntervalSec": 300,
+  "alarmThreshold": 10,
   "rules": [
     { "pattern": "some-org/*", "action": "ignore" },
     { "pattern": "noisy-repo", "action": "ack" },
@@ -71,6 +75,8 @@ From the command line, `omarchy bar set` takes the value as JSON already, so pas
 
 ```bash
 omarchy bar set renaudhager.github-notifications refreshIntervalSec 300
+
+omarchy bar set renaudhager.github-notifications alarmThreshold 10
 
 omarchy bar set renaudhager.github-notifications rules \
   '[{"pattern":"some-org/*","action":"ignore"},{"pattern":"infra/repo","action":"ack"}]'

@@ -146,75 +146,32 @@ Panel {
 
   // ---------------------------------------------------------------- bar icon
   //
-  // The count sits in the bar next to the bell, the way the clock carries its
-  // own text: a glyph alone would leave the user clicking to learn the number.
-  readonly property int fontSize: Style.font.bodySmall
-  // Estimated from the digit count: the bar needs the slot width before the
-  // inner Text has ever been laid out, so measuring it here would recurse.
-  readonly property int badgeSlot: {
-    var text = countLabel(service.visibleCount)
-    return Math.ceil(text.length * fontSize * 0.62) + Style.space(6)
-  }
+  // The count sits in the bar next to the bell, the way the battery carries
+  // its percentage. BarIconButton's own labelText keeps the count at bar font
+  // size: a custom iconComponent is scaled down to fit Style.bar.iconSize, so
+  // drawing the count inside it shrinks everything.
+  readonly property string badgeLabel:
+    countLabel(service.visibleCount) + (service.failing ? "!" : "")
+  // Estimated from the label length: the bar needs the slot width before the
+  // label has been laid out, so measuring it here would recurse.
+  readonly property int badgeSlot:
+    Math.ceil(badgeLabel.length * Style.bar.iconFont * 0.62) + Style.space(4)
 
   BarIconButton {
     id: button
     anchors.fill: parent
     bar: root.bar
-    fontFamily: root.fontFamily
-    active: service.alarming
+    text: "\u{f02a4}"
+    labelText: vertical ? "" : root.badgeLabel
+    active: service.alarming || service.failing
     activeColor: root.urgent
     tooltipText: root.tooltipText()
-    fixedWidth: vertical ? Style.bar.iconSlot : Style.bar.iconSlot + badgeSlot
+    slotSize: vertical ? Style.bar.iconSlot : Style.bar.iconSlot + root.badgeSlot
     onPressed: function(buttonCode) {
       if (buttonCode === Qt.RightButton) root.openInbox()
       else root.toggle()
     }
     onWheelMoved: function(delta) { if (delta > 0) service.refresh() }
-
-    iconComponent: Component {
-      // The button sizes this to its square icon canvas. The row is centred on
-      // it and overflows both sides evenly into the badgeSlot extra width.
-      Item {
-        id: badgeCanvas
-
-        Row {
-          id: badgeRow
-          anchors.centerIn: parent
-          spacing: Style.space(3)
-
-          // OpticalGlyph has no implicit size; give it the icon canvas.
-          OpticalGlyph {
-            id: bell
-            width: Style.bar.iconCanvas
-            height: Style.bar.iconCanvas
-            text: "󰊤"
-            fontFamily: root.fontFamily
-            fontSize: Style.bar.iconFont
-            color: button.active ? button.activeColor : button.foreground
-          }
-
-          Text {
-            id: badgeText
-            anchors.verticalCenter: parent.verticalCenter
-            text: root.countLabel(service.visibleCount)
-            color: button.active ? button.activeColor : root.dim
-            font.family: root.fontFamily
-            font.pixelSize: root.fontSize
-          }
-        }
-
-        Text {
-          visible: service.failing
-          anchors.top: badgeRow.top
-          anchors.right: badgeRow.right
-          text: "!"
-          color: root.urgent
-          font.family: root.fontFamily
-          font.pixelSize: Style.font.caption
-          font.bold: true
-        }
-      }
-    }
   }
 
   // ---------------------------------------------------------------- popup
